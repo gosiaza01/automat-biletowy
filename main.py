@@ -7,25 +7,157 @@ import time
 PROMPT = "Twój wybór"
 ERROR_MSG = "Niepoprawny wybór spróbuj ponownie ."
 
-with open("./prices.json", "r", encoding="UTF-8") as jf:
-    prices = json.load(jf)
-
-cart = []
-end = False 
-
-while not end: 
-
-    print("""Wybierz jedną z opcji: 
-    1 - dodaj bilet
-    2 - pokaż koszyk
-    3 - zapłać
-    4 - zakończ program
-    """)
-
-    # 9.	Pobierz jeden znak.
+def display_menu(cart, prices):
+    print()
+    print("Wybierz jedną z opcji:\n1 - dodaj bilet\n2 - pokaż koszyk\n3 - zapłać\n4 - zakończ program")
+    
     option = input(PROMPT)[0]
 
-    # Jeśli użytkownik wybierze 1:
+    match option: 
+        case "1":
+            add_ticket(cart, prices)\
+        case "2":
+            display_cart(cart)
+        case "3":
+            register_payment(cart, prices)
+        case "4":
+            end_machine(cart, prices)
+        case _:
+            print(ERROR_MSG)
+        
+def display_cart(cart):
+    if not cart:
+        print("W koszyku nie ma jeszcze żadnych biletów.")
+    else:
+        print("Zawartość koszyka")
+        print()
+        print("Lp. I   Cena   I  Bilet")
+        for index, ticket in enumerate(cart):
+            print(f"{index:3}  I  {ticket['price']:7.2f} zł  I  Bilet {ticket['discount']} {ticket['type']} {ticket['validity']}")
+        print()
+        print(get_cart_value(cart))
+
+def register_payment(cart, prices):
+    if not cart: 
+        print("W koszyku nie ma jeszcze żadnych biletów.")
+    else: 
+        print(get_cart_value(cart))
+        while True:
+            print("Wybierz metodę płatności:\nc - karta\ng - gotówka\nb - blik\np - powrót\nk - koniec")
+            payment_method = input(PROMPT)[0]
+            match payment_method:
+                case "c":
+                    pay_by_card()
+                    break
+                case "b":
+                    pay_by_blik(cart, prices)
+                    break 
+                case "g":
+                    pay_by_cash(cart)
+                    break
+                case "p":
+                    display_menu(cart, prices)
+                case "k"
+
+def pay_by_card():
+    input("Proszę zbliżyć kartę ...")
+
+def pay_by_cash(cart):
+    to_pay = sum(ticket["price"] for ticket in cart)
+    paid = 0
+    while paid < to_pay:
+        print(f"Kwota do zapłaty: {(to_pay - paid): 5.2} zł.")
+        paid += float(input("Wrzuć pieniądze: "))
+        if paid > to_pay: 
+            print(f"Reszta: {(paid - to_pay):5.2} zł.")
+def pay_by_blik(cart,prices):
+    blik = input("Podaj kod BLIK: ")
+    if len(blik) != 6 or not blik.isdigit():
+        print("Płatność nie powiodła się, spróbuj ponownie")
+        register_payment(cart, prices)
+def get_cart_value(cart):
+    return f"Wartość biletów w koszyku: {sum(ticket['price'] for ticket in cart):5.2f} zł."
+def end_machine(cart, prices):
+    choice = input("Czy na pewno chcesz porzucić koszyk (t - tak)? ")[0]
+    if  choice == "t":
+        exit()
+    else: display_menu(cart, prices)
+
+def add_ticket(cart, prices):
+    ticket = {}
+    def choose_discount():
+        while True: 
+            print("Wybierz typ biletu:\nn - normalny\nu - ulgowqy\np - powrót\nk - koniec") 
+            ch = input(PROMPT)[0]
+            if ch == "n":
+                ticket["discount"] = "normalny"
+                return 
+            elif ch == "u":
+                ticket["discount"] = "ulgowy"
+                return 
+            elif ch == "p":
+                display_menu(cart, prices)
+                return 
+            elif ch == "k":
+                end_machine(cart, prices)
+            else: 
+                print(ERROR_MSG)
+    def choose_validity_from_map(prompt_text, options_map):
+        while True:
+            print(prompt_text)
+            ch = input(PROMPT)[0]
+            if ch in options_map:
+                ticket["validity"] = options_map[ch]
+                return
+            elif ch == "p": 
+                display_menu(cart, prices)
+                return 
+            elif ch == "k":
+                end_machine(cart, prices)
+            else: 
+                print(ERROR_MSG)
+    def choose_type():
+        while True: 
+            print("Wybierz typ biletu:\no - okresowy\nc - czasowy\nj - jednorazowy\np - powrót\nk - koniec")") 
+            ch = input(PROMPT)[0]
+
+            if ch == "o": 
+                ticket["type"] = "okresowy"
+                choose_validity_from_map(
+                    "Wybierz okres ważności biletu:\n1 - półroczny\n2 - miesięczny\n3 0- tygodniowy\n4 - jednodniowy\np - powrót\nk - koniec"
+                    {"1": "półroczny", "2": "miesięczny, "3": "tygodniowy", "4": "jednodniowy"},
+                )
+                return 
+                4x To 
+
+    choose_discount()
+    choose_type()
+
+    print(ticket["discount"], ticket["type"], ticket["validity"])
+    ticket["price"] = prices[ticket["discount"]][ticket["type"]][ticket["validity"]]
+    cart.append(ticket)
+    print(f"Dodano do koszyka bilet {ticket['discount']} {ticket['type']} {ticket['validity']} za cenę {ticket['price']}")
+
+def main():
+    with open("./prices.json", "r", encoding="UTF-8") as jf:
+        prices = json.load(jf)
+
+    cart = []
+    while True: 
+        display_menu(cart, prices)
+if __name__ == "__main__": 
+    main()
+
+   
+
+
+
+
+
+
+
+
+
     match option:
         case "1": 
             ticket = {}
@@ -45,7 +177,7 @@ while not end:
                 elif ticket1 == "p": 
                     break
                 elif ticket1 == "k":
-                    exit()
+                    end_machine()
                 else:
                     print(ERROR_MSG)
             if not ticket:
@@ -81,7 +213,7 @@ while not end:
                                 cont = False
                                 break
                             case "k": 
-                                exit()
+                                end_machine()
                             case _: 
                                 print(ERROR_MSG)
                     if not cont: 
@@ -107,7 +239,7 @@ while not end:
                                 cont = False
                                 break
                             case "k":
-                                exit()
+                                end_machine()
                             case _: 
                                 print(ERROR_MSG)
                     if not cont:
@@ -129,7 +261,7 @@ while not end:
                                 cont = False 
                                 break 
                             case "k":
-                                exit()
+                                end_machine()
                             case _: 
                                 print(ERROR_MSG)
                     if not cont: 
@@ -139,7 +271,7 @@ while not end:
                     cont = False 
                     break 
                 elif ticket2 == "k":
-                    exit()
+                    end_machine()
                 else: 
                     print(ERROR_MSG)
             if not cont: 
@@ -201,72 +333,3 @@ while not end:
 
 
 
-
-    # 10.	
-    # Na podstawie wyboru wybierz:
-    # •	normalny
-    # •	ulgowy
-    # 11.	Wyświetl:
-    # •	o – okresowy
-    # •	c – czasowy
-    # •	j – jednorazowy
-    # 12.	Pobierz jeden znak.
-    # 13.	Wyświetl dostępne opcje z pliku JSON (np. dla okresowego):
-    # •	1 – półroczny
-    # •	2 – miesięczny
-    # •	3 – tygodniowy
-    # •	4 – jednodniowy
-    # 14.	Pobierz jeden znak.
-    # 15.	Na podstawie wyboru:
-    # •	odczytaj cenę z cennik
-    # •	zapisz nazwę biletu
-    # 16.	Dodaj bilet do listy koszyk.
-    # 17.	Dodaj cenę do suma.
-    # 18.	Wyświetl komunikat:
-    # •	„Dodano bilet: X, cena: Y zł”
-    # Jeśli użytkownik wybierze 2:
-    # 19.	Jeśli koszyk jest pusty → pokaż komunikat.
-    # 20.	W przeciwnym razie:
-    # •	wypisz wszystkie bilety
-    # •	pokaż sumę
-    # Jeśli użytkownik wybierze 3:
-    # 21.	Jeśli koszyk jest pusty → komunikat i powrót do menu.
-    # 22.	Wyświetl:
-    # •	„Do zapłaty: X zł”
-    # 23.	Zapytaj o metodę płatności:
-    # •	g – gotówka
-    # •	k – karta
-    # Jeśli g:
-    # 24.	Poproś użytkownika o wpisanie kwoty (może być liczba).
-    # 25.	Pobierz kwotę.
-    # 26.	Jeśli kwota < suma:
-    # •	komunikat „za mało pieniędzy”
-    # •	wróć do wpisywania
-    # 27.	Jeśli kwota ≥ suma:
-    # •	oblicz resztę:
-    
-    # reszta = kwota - suma
-    
-    # •	wyświetl:
-    # •	„Reszta: X zł”
-    # Jeśli k:
-    # 28.	Wyświetl komunikat:
-    # •	„Płatność zaakceptowana”
-    # 29.	Wyświetl:
-    # •	„Dziękujemy za zakup”
-    # 30.	Wyczyść:
-    # •	koszyk
-    # •	suma = 0
-    # 3.	Zapisz dane do zmiennej (np. cennik jako słownik/dictionary).
-    # 4.	Utwórz pusty koszyk (np. lista koszyk = []).
-    # 5.	Ustaw zmienną suma = 0.
-    # 6.	Wyświetl użytkownikowi opcje:
-    # •	1 – dodaj bilet
-    # •	2 – pokaż koszyk
-    # •	3 – zapłać
-    # •	4 – zakończ program
-    # 7.	Pobierz jeden znak od użytkownika (np. input()[0]).
-
-
-    # Jeśli użytkownik wybierze 4:
-    # 31.	Zakończ działanie programu.
