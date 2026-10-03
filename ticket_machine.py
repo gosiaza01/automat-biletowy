@@ -57,7 +57,7 @@ def register_payment(cart, prices):
                     break
                 case "p":
                     display_menu(cart, prices)
-                case "k"
+                case "k":
 
 def pay_by_card():
     input("Proszę zbliżyć kartę ...")
@@ -85,9 +85,10 @@ def end_machine(cart, prices):
 
 def add_ticket(cart, prices):
     ticket = {}
+
     def choose_discount():
         while True: 
-            print("Wybierz typ biletu:\nn - normalny\nu - ulgowqy\np - powrót\nk - koniec") 
+            print("Wybierz typ biletu:\nn - normalny\nu - ulgowy\np - powrót\nk - koniec") 
             ch = input(PROMPT)[0]
             if ch == "n":
                 ticket["discount"] = "normalny"
@@ -118,17 +119,38 @@ def add_ticket(cart, prices):
                 print(ERROR_MSG)
     def choose_type():
         while True: 
-            print("Wybierz typ biletu:\no - okresowy\nc - czasowy\nj - jednorazowy\np - powrót\nk - koniec")") 
+            print("Wybierz typ biletu:\no - okresowy\nc - czasowy\nj - jednorazowy\np - powrót\nk - koniec")
             ch = input(PROMPT)[0]
 
             if ch == "o": 
                 ticket["type"] = "okresowy"
                 choose_validity_from_map(
-                    "Wybierz okres ważności biletu:\n1 - półroczny\n2 - miesięczny\n3 0- tygodniowy\n4 - jednodniowy\np - powrót\nk - koniec"
-                    {"1": "półroczny", "2": "miesięczny, "3": "tygodniowy", "4": "jednodniowy"},
+                    "Wybierz okres ważności biletu:\n1 - półroczny\n2 - miesięczny\n3 0- tygodniowy\n4 - jednodniowy\np - powrót\nk - koniec")
+                    {"1": "półroczny", "2": "miesięczny, "3": "tygodniowy", "4": "jednodniowy"}
                 )
                 return 
-                4x To 
+            
+            elif ch == "c":
+                ticket["type"] = "czasowy"
+                choose_validity_from_map(
+                    "Wybierz okres ważności biletu:\n1 - 60 minut\n2 - 30 minut\n3 - 10 minut\np - powrót\nk - koniec")
+                    {"1": "60 - minutowy", "2": "30 - minutowy", "3": "10 - minutowy"},
+                )
+                return
+            elif ch == "j":
+                ticket["type"] = "jednorazowy"
+            choose_validity_from_map(
+                "Wybierz obszar ważności biletu:\n1 - miejski\n2 - aglomeracyjny\np - powrót\nk - koniec",
+                {"1": "miejski", "2": "aglomeracyjny"}, 
+            )
+            return 
+        
+        elif ch == "p":
+            display_menu(cart, prices) 
+            return 
+        elif ch == "k":
+            end_machine(cart, prices)
+            return 
 
     choose_discount()
     choose_type()
@@ -148,7 +170,14 @@ def main():
 if __name__ == "__main__": 
     main()
 
-   
+class TicketMachine: 
+    def __init__(self, prices, cart):
+        self.prices = Prices(prices)
+        self.cart = Cart ()
+
+    def main(self):
+        while True:
+            
 
 
 
